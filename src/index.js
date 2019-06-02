@@ -9,16 +9,19 @@ import fbConfig from './config/fbConfig'
 
 import './index.css';
 import App from './App';
-import * as serviceWorker from './serviceWorker';
+// import * as serviceWorker from './serviceWorker';
+import registerServiceWorker from './registerServiceWorker';
 import rootReducer from './store/reducers/rootReducer';
 
 const store = createStore(rootReducer, 
   compose(
     applyMiddleware(thunk.withExtraArgument({getFirebase, getFirestore})),
     reduxFirestore(fbConfig),
-    reactReduxFirebase(fbConfig),
+    reactReduxFirebase(fbConfig, {attachAuthIsReady: true}), // redux binding for firebase
   )  
 );
 
-ReactDOM.render(<Provider store={store}><App /></Provider>, document.getElementById('root'));
-serviceWorker.unregister();
+store.firebaseAuthIsReady.then(() => {
+  ReactDOM.render(<Provider store={store}><App /></Provider>, document.getElementById('root'));
+  registerServiceWorker();
+});
